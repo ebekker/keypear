@@ -2,19 +2,26 @@
 // Copyright (C) Eugene Bekker.
 
 using Keypear.Shared.PAKE.ScottBradySRP;
-using static Keypear.Shared.SharedUtils;
+using Keypear.Shared.Utils;
+using static Keypear.Shared.Utils.KpCommon;
 
-namespace Keypear.Shared;
+namespace Keypear.Shared.Krypto;
 
-public class KyprPakeClient
+public class PakeClient
 {
     private readonly SrpParameters _parameters = new();
 
-    private readonly KyprPakeServer _server = new();
+    private readonly PakeServer _server = new();
 
     public void Register(string username, string password)
     {
-        var preInput = new KyprPakeServer.PrepareParametersInput
+        ArgumentNullException.ThrowIfNull(username);
+        ArgumentNullException.ThrowIfNull(password);
+
+        username = KpEncoding.Normalize(username);
+        password = KpEncoding.Normalize(password);
+
+        var preInput = new PakeServer.PrepareParametersInput
         {
             Username = username,
         };
@@ -29,7 +36,7 @@ public class KyprPakeClient
             _parameters._groupParameters.N);
         var v = srp.GenerateVerifier(username, password, prepResult.VerifierSalt);
 
-        var regInput = new KyprPakeServer.RegisterInput
+        var regInput = new PakeServer.RegisterInput
         {
             Username = username,
             Verifier = v.ToByteArray()
@@ -40,7 +47,13 @@ public class KyprPakeClient
 
     public KyprSession StartSession(string username, string password)
     {
-        var prepInput = new KyprPakeServer.PrepareParametersInput
+        ArgumentNullException.ThrowIfNull(username);
+        ArgumentNullException.ThrowIfNull(password);
+
+        username = KpEncoding.Normalize(username);
+        password = KpEncoding.Normalize(password);
+
+        var prepInput = new PakeServer.PrepareParametersInput
         {
             Username = username,
         };
@@ -56,7 +69,7 @@ public class KyprPakeClient
 
         var biA = srp.GenerateAValues();
 
-        var sessInput = new KyprPakeServer.PrepareSessionInput
+        var sessInput = new PakeServer.PrepareSessionInput
         {
             Username = username,
             EphemeralA = biA.ToByteArray(),
@@ -69,7 +82,7 @@ public class KyprPakeClient
         var skey = srp.ComputeSessionKey(username, password, prepResult.VerifierSalt, biB);
         var clientProof = srp.GenerateClientProof(biB, skey);
 
-        var verifyInput = new KyprPakeServer.VerifySessionInput
+        var verifyInput = new PakeServer.VerifySessionInput
         {
             EphemeralA = biA.ToByteArray(),
             ClientProof = clientProof.ToByteArray(),

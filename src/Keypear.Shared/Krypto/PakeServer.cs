@@ -2,12 +2,12 @@
 // Copyright (C) Eugene Bekker.
 
 using Keypear.Shared.PAKE.ScottBradySRP;
-using static Keypear.Shared.SharedUtils;
+using static Keypear.Shared.Utils.KpCommon;
 
 
-namespace Keypear.Shared;
+namespace Keypear.Shared.Krypto;
 
-public class KyprPakeServer
+public class PakeServer
 {
     private readonly SrpParameters _parameters = new();
 

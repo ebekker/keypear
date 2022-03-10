@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Keypear.Shared\Keypear.Shared.csproj" />
     <ProjectReference Include="..\..\src\Keypear.Server.LocalServer\Keypear.Server.LocalServer.csproj" />
+    <ProjectReference Include="..\..\src\Keypear.Shared\Keypear.Shared.csproj" />
   </ItemGroup>
 
 </Project>

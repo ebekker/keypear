@@ -1,17 +1,16 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using System;
-using Xunit;
+using Keypear.Shared.Krypto;
 
-namespace Keypear.Shared.Tests;
+namespace Keypear.Shared.Tests.Encryption;
 
 public class KyprPakeClientTests
 {
     [Fact]
     public void Register_Null_Username_Throws()
     {
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         Assert.ThrowsAny<Exception>(
             () => client.Register(null!, null!));
@@ -20,7 +19,7 @@ public class KyprPakeClientTests
     [Fact]
     public void Register_Null_Password_Throws()
     {
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         Assert.ThrowsAny<Exception>(
             () => client.Register("jdoe@example.com", null!));
@@ -29,7 +28,7 @@ public class KyprPakeClientTests
     [Fact]
     public void Register_No_Exceptions()
     {
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         client.Register("jdoe@example.com", "foo bar non");
     }
@@ -40,7 +39,7 @@ public class KyprPakeClientTests
         var I = "jdoe@example.com";
         var P = "foo bar non";
 
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         client.Register(I, P);
         Assert.ThrowsAny<Exception>(
@@ -53,7 +52,7 @@ public class KyprPakeClientTests
         var I = "jdoe@example.com";
         var P = "foo bar non";
 
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         client.Register(I, P);
         Assert.ThrowsAny<Exception>(
@@ -67,7 +66,7 @@ public class KyprPakeClientTests
         var I = "jdoe@example.com";
         var P = "foo bar non";
 
-        var client = new KyprPakeClient();
+        var client = new PakeClient();
 
         client.Register(I, P);
         client.StartSession(I, P);

@@ -1,7 +1,6 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using System;
 using System.Numerics;
 using System.Security.Cryptography;
 using Keypear.Shared.PAKE.ScottBradySRP;

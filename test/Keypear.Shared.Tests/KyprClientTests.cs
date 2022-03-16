@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using Keypear.Server.LocalServer;
+using Keypear.Shared.Models.InMemory;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit.Abstractions;
@@ -14,8 +15,10 @@ public class KyprClientTests : IDisposable
     private readonly ITestOutputHelper _testOut;
     private readonly SqliteConnection _conn;
     private readonly DbContextOptions _opts;
-    private readonly KyprDbContext _db;
-    private readonly IKyprServer _server;
+    private readonly KyprDbContext _db1;
+    private readonly KyprDbContext _db2;
+    private readonly IKyprServer _server1;
+    private readonly IKyprServer _server2;
 
     public KyprClientTests(ITestOutputHelper testOutputHelper)
     {
@@ -28,16 +31,23 @@ public class KyprClientTests : IDisposable
             .UseSqlite<KyprDbContext>(_conn)
             .Options;
 
-        _db = new KyprDbContext(_opts);
-        _db.Database.EnsureCreated();
+        _db1 = new KyprDbContext(_opts);
+        _db1.Database.EnsureCreated();
+        _server1 = new ServerImpl(_db1);
 
-        _server = new ServerImpl(_db);
+        _db2 = new KyprDbContext(_opts);
+        _db2.Database.EnsureCreated();
+        _server2 = new ServerImpl(_db2);
     }
 
     public void Dispose()
     {
-        _server.Dispose();
-        _db.Dispose();
+        _server2.Dispose();
+        _db2.Dispose();
+
+        _server1.Dispose();
+        _db1.Dispose();
+
         _conn.Dispose();
     }
 
@@ -47,8 +57,8 @@ public class KyprClientTests : IDisposable
         var username = "jdoe@example.com";
         var password = "foo bar non";
 
-        var client1 = new KyprClient(_server);
-        var client2 = new KyprClient(_server);
+        using var client1 = new KyprClient(_server1);
+        using var client2 = new KyprClient(_server1);
 
         await client1.CreateAccountAsync(username + "1", password);
         await client2.CreateAccountAsync(username + "2", password);
@@ -67,7 +77,7 @@ public class KyprClientTests : IDisposable
         var username = "jdoe@example.com";
         var password = "foo bar non";
 
-        var client = new KyprClient(_server);
+        using var client = new KyprClient(_server1);
 
         await client.CreateAccountAsync(username, password);
         client.LockAccount();
@@ -82,7 +92,7 @@ public class KyprClientTests : IDisposable
         var username = "jdoe@example.com";
         var password = "foo bar non";
 
-        var client = new KyprClient(_server);
+        using var client = new KyprClient(_server1);
 
         await client.CreateAccountAsync(username, password);
         client.LockAccount();
@@ -98,8 +108,8 @@ public class KyprClientTests : IDisposable
         var vaultLabel1 = "Vault #1";
         var vaultLabel2 = "Vault #2";
 
-        var client1 = new KyprClient(_server);
-        var client2 = new KyprClient(_server);
+        using var client1 = new KyprClient(_server1);
+        using var client2 = new KyprClient(_server1);
 
         await client1.CreateAccountAsync(username + "1", password);
         var acct1 = client1.Account;
@@ -130,12 +140,12 @@ public class KyprClientTests : IDisposable
             .Select(_ => "Vault " + Guid.NewGuid())
             .ToList();
 
-        var client1 = new KyprClient(_server);
+        using var client1 = new KyprClient(_server1);
         await client1.CreateAccountAsync(username + "1", password);
         var acct1 = client1.Account;
         var vaults1 = await Task.WhenAll(vaultLabels.Select(async x => await client1.CreateVaultAsync(x)).ToList());
 
-        var client2 = new KyprClient(_server);
+        using var client2 = new KyprClient(_server1);
         await client2.CreateAccountAsync(username + "2", password);
         var acct2 = client2.Account;
 
@@ -151,7 +161,7 @@ public class KyprClientTests : IDisposable
         var username = "jdoe@example.com";
         var password = "foo bar non";
 
-        var client = new KyprClient(_server);
+        using var client = new KyprClient(_server1);
 
         await client.CreateAccountAsync(username, password);
 
@@ -180,7 +190,7 @@ public class KyprClientTests : IDisposable
                 x + "-_" + Guid.NewGuid()))
             .ToList();
 
-        var client = new KyprClient(_server);
+        using var client = new KyprClient(_server1);
 
         await client.CreateAccountAsync(username, password);
 
@@ -228,7 +238,7 @@ public class KyprClientTests : IDisposable
             .ToList();
         var recordValues = recordLabels.ToDictionary(x => x, x => Guid.NewGuid().ToString());
 
-        var client = new KyprClient(_server);
+        using var client = new KyprClient(_server1);
 
         await client.CreateAccountAsync(username, password);
 
@@ -301,9 +311,8 @@ public class KyprClientTests : IDisposable
         Assert.Equal(vault.Records, client.SearchRecords(vault, "RECORD"));
     }
 
-
     [Fact]
-    public async Task Create_and_Recover_Records_With_Second_Client()
+    public async Task Create_Records_and_Recover_With_Second_Client()
     {
         var username = "jdoe@example.com";
         var password = "foo bar non";
@@ -315,37 +324,37 @@ public class KyprClientTests : IDisposable
             .ToList();
         var recordValues = recordLabels.ToDictionary(x => x, x => Guid.NewGuid().ToString());
 
-        var client1 = new KyprClient(_server);
-
-        await client1.CreateAccountAsync(username, password);
-
-        var vault1 = await client1.CreateVaultAsync("vault1");
-
-        foreach (var rl in recordLabels)
+        using (var client1 = new KyprClient(_server1))
         {
-            await client1.SaveRecordAsync(vault1, new()
+            await client1.CreateAccountAsync(username, password);
+
+            var vault1 = await client1.CreateVaultAsync("vault1");
+
+            foreach (var rl in recordLabels)
             {
-                Summary = new()
+                await client1.SaveRecordAsync(vault1, new()
                 {
-                    Label = "Record " + rl,
-                    Username = "user-" + recordValues[rl],
-                },
-                Content = new()
-                {
-                    Password = "value-" + recordValues[rl],
-                }
-            });
+                    Summary = new()
+                    {
+                        Label = "Record " + rl,
+                        Username = "user-" + recordValues[rl],
+                    },
+                    Content = new()
+                    {
+                        Password = "value-" + recordValues[rl],
+                    }
+                });
+            }
         }
 
-        client1.Dispose();
-        client1 = null;
-
-        var client1a = new KyprClient(_server);
+        using var client1a = new KyprClient(_server2);
         await client1a.AuthenticateAccountAsync(username, password);
-        await client1a.RefreshVaults();
+        await client1a.RefreshVaultsAsync();
         var vault1a = client1a.Vaults.Single();
         client1a.UnlockVault(vault1a);
         client1a.UnlockRecordSummaries(vault1a);
+
+        Assert.Equal("vault1", vault1a.Summary!.Label);
 
         foreach (var rl in recordLabels)
         {
@@ -358,5 +367,80 @@ public class KyprClientTests : IDisposable
         }
 
         Assert.Equal(vault1a.Records, client1a.SearchRecords(vault1a, "RECORD"));
+    }
+
+    [Fact]
+    public async Task Create_Records_and_Recover_With_Second_Server_and_Session()
+    {
+        var username = "jdoe@example.com";
+        var password = "foo bar non";
+
+        var recordLabels = Enumerable.Range(1, 10)
+            .Select(_ => Guid.NewGuid())
+            .SelectMany(x => Enumerable.Range(1, 5).Select(_ =>
+                x + "-_" + Guid.NewGuid()))
+            .ToList();
+        var recordValues = recordLabels.ToDictionary(x => x, x => Guid.NewGuid().ToString());
+
+        KyprSession? session;
+        Account? account;
+
+        using (var client1 = new KyprClient(_server1))
+        {
+            await client1.CreateAccountAsync(username, password);
+            session = client1.Session;
+            account = client1.Account;
+
+            var vault1 = await client1.CreateVaultAsync("vault1");
+
+            foreach (var rl in recordLabels)
+            {
+                await client1.SaveRecordAsync(vault1, new()
+                {
+                    Summary = new()
+                    {
+                        Label = "Record " + rl,
+                        Username = "user-" + recordValues[rl],
+                    },
+                    Content = new()
+                    {
+                        Password = "value-" + recordValues[rl],
+                    }
+                });
+            }
+        }
+
+        using var server = new ServerImpl(_db2, session);
+        using var client2 = new KyprClient(server);
+
+        client2.Session = session;
+        client2.Account = account;
+
+        // This was automatically locked by
+        // client1 when it was disposed
+        Assert.True(client2.IsAccountLocked());
+        client2.UnlockAccount(password);
+
+        await client2.RefreshVaultsAsync();
+        var vault1a = client2.Vaults.Single();
+        client2.UnlockVault(vault1a);
+        client2.UnlockRecordSummaries(vault1a);
+
+        Assert.Equal("vault1", vault1a.Summary!.Label);
+
+        var records = client2.ListRecords(vault1a).ToArray();
+        Assert.Equal(50, records.Length);
+
+        foreach (var rl in recordLabels)
+        {
+            var rlParts = rl.Split("_");
+            var hits1 = client2.SearchRecords(vault1a, rlParts[0]);
+            var hits2 = client2.SearchRecords(vault1a, rlParts[1]);
+
+            Assert.Equal(5, hits1.Count());
+            Assert.Single(hits2);
+        }
+
+        Assert.Equal(vault1a.Records, client2.SearchRecords(vault1a, "RECORD"));
     }
 }

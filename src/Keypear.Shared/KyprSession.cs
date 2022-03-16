@@ -5,6 +5,6 @@ namespace Keypear.Shared;
 
 public class KyprSession
 {
-    public ReadOnlyMemory<byte> SessionId { get; init; }
-    public ReadOnlyMemory<byte> SessionKey { get; init; }
+    public byte[]? SessionId { get; set; }
+    public byte[]? SessionKey { get; set; }
 }

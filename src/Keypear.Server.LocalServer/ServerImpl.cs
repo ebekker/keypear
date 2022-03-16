@@ -1,4 +1,5 @@
-﻿using Keypear.Shared;
+﻿using System.Text.Json;
+using Keypear.Shared;
 using Keypear.Shared.Models.Persisted;
 using Keypear.Shared.Models.Service;
 using Keypear.Shared.Utils;
@@ -8,17 +9,44 @@ namespace Keypear.Server.LocalServer;
 public class ServerImpl : IKyprServer
 {
     private readonly KyprDbContext _db;
+    private KyprSession? _session;
     private Account? _account;
 
-    public ServerImpl(KyprDbContext db)
+    public ServerImpl(KyprDbContext db, KyprSession? session = null)
     {
         _db = db;
+        _session = session;
+
+        if (_session == null)
+        {
+            return;
+        }
+
+        Console.WriteLine("Session:");
+        Console.WriteLine(JsonSerializer.Serialize(_session));
+
+        var acctIdBytes = _session.SessionId!;
+        var sessionKey = _session.SessionKey!;
+        //for (var i = 0; i < acctIdBytes.Length; i++)
+        //{
+        //    acctIdBytes[i] ^= sessionKey[i];
+        //}
+
+        var acctId = new Guid(acctIdBytes!);
+        Console.WriteLine("Loading Account:  " + acctId);
+        var acct = _db.Accounts.FirstOrDefault(x => x.Id == acctId);
+        if (acct == null)
+        {
+            throw new Exception("invalid Account");
+        }
+
+        _account = acct;
     }
 
     public void Dispose()
     { }
 
-    public async Task AuthenticateAccountAsync(AccountDetails input)
+    public async Task<KyprSession> AuthenticateAccountAsync(AccountDetails input)
     {
         KpCommon.ThrowIfNull(input.AccountId);
 
@@ -31,6 +59,19 @@ public class ServerImpl : IKyprServer
         }
 
         _account = acct;
+
+        Console.WriteLine("Saving Account:  " + acct.Id);
+
+        _session = new()
+        {
+            SessionId = acct.Id.ToByteArray(),
+            SessionKey = Guid.NewGuid().ToByteArray(),
+        };
+        //for (var i = 0; i < _session.SessionId.Length; i++)
+        //{
+        //    _session.SessionId[i] ^= _session.SessionKey[i];
+        //}
+        return _session;
     }
 
     public async Task<AccountDetails> CreateAccountAsync(AccountDetails input)
@@ -88,7 +129,7 @@ public class ServerImpl : IKyprServer
 
     public async Task<VaultDetails> CreateVaultAsync(VaultDetails input)
     {
-        KpCommon.ThrowIfNull(_account, "client is not authenticated");
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
 
         var vault = new Vault
         {
@@ -123,7 +164,7 @@ public class ServerImpl : IKyprServer
 
     public async Task<Guid[]> ListVaultsAsync()
     {
-        KpCommon.ThrowIfNull(_account, "client is not authenticated");
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
 
         return await _db.Vaults.Select(x => x.Id).ToArrayAsync();
     }

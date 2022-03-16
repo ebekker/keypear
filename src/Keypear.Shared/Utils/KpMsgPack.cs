@@ -12,7 +12,7 @@ public static class KpMsgPack
     public static byte[] DynSer<T>(T obj) => MessagePackSerializer.Serialize<T>(obj,
         MessagePack.Resolvers.ContractlessStandardResolver.Options);
 
-    public static T DynSer<T>(byte[] ser) => MessagePackSerializer.Deserialize<T>(ser,
+    public static T DynDes<T>(byte[] ser) => MessagePackSerializer.Deserialize<T>(ser,
         MessagePack.Resolvers.ContractlessStandardResolver.Options);
 
 }

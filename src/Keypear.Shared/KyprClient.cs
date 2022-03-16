@@ -67,7 +67,7 @@ public class KyprClient : IDisposable
         acct.Id = details.AccountId;
         Account = acct;
 
-        await _server.AuthenticateAccountAsync(details);
+        Session = await _server.AuthenticateAccountAsync(details);
     }
 
     public async Task AuthenticateAccountAsync(string username, string password)
@@ -105,7 +105,7 @@ public class KyprClient : IDisposable
 
         Account = acct;
 
-        await _server.AuthenticateAccountAsync(details);
+        Session = await _server.AuthenticateAccountAsync(details);
     }
 
     public bool IsAccountLocked()
@@ -188,7 +188,7 @@ public class KyprClient : IDisposable
     /// <summary>
     /// Refreshed vaults are initially in the locked state.
     /// </summary>
-    public async Task RefreshVaults()
+    public async Task RefreshVaultsAsync()
     {
         if (Account == null)
         {
@@ -260,7 +260,26 @@ public class KyprClient : IDisposable
         vault.Summary = KpMsgPack.Des<VaultSummary>(vault.SummarySer);
     }
 
-    public async Task SaveRecordAsync(Vault vault, Record record)
+    public void UnlockVaults()
+    {
+        foreach (var v in ListVaults())
+        {
+            if (IsVaultLocked(v))
+            {
+                UnlockVault(v);
+            }
+        }
+    }
+
+    public void LockVaults()
+    {
+        foreach (var v in ListVaults())
+        {
+            LockVault(v);
+        }
+    }
+
+    public async Task<Guid> SaveRecordAsync(Vault vault, Record record)
     {
         if (IsVaultLocked(vault))
         {
@@ -285,6 +304,8 @@ public class KyprClient : IDisposable
 
         record.Id = details.RecordId;
         vault.Records.Add(record);
+
+        return record.Id.Value;
     }
 
     public bool IsRecordLocked(Record record)

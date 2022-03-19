@@ -7,15 +7,17 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Keypear.CliClient.CliModel.ListCommands;
 
-public class VaultsCommand
+[Command("vaults",
+    Description = "lists all the Vaults granted to the current Account.")]
+public class ListVaultsCommand
 {
+    private readonly MainCommand _main;
     private readonly IConsole _console;
-    private readonly Common? _common;
 
-    public VaultsCommand(IConsole console, Common common)
+    public ListVaultsCommand(ListCommand parent, IConsole console)
     {
+        _main = parent.Main;
         _console = console;
-        _common = common;
     }
 
     [Option]
@@ -29,20 +31,13 @@ public class VaultsCommand
 
     public async Task<int> OnExecuteAsync()
     {
-        var sess = new CliSession();
-        sess.Load();
-
-        var client = _common!.GetClient(sess.Details!.ServerSession);
-
-        client.Session = sess.Details.ServerSession;
-        client.Account = sess.Details.Account;
-        client.Vaults = sess.Details.Vaults;
+        var sess = _main.GetSession();
+        using var client = sess.GetClient();
 
         if (Refresh)
         {
             await client.RefreshVaultsAsync();
-            sess.Details.Vaults = client.Vaults;
-            sess.Save();
+            sess.Save(client);
         }
 
         client.UnlockVaults();

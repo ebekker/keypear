@@ -6,6 +6,7 @@ namespace Keypear.CliClient.CliModel;
 [Subcommand(
     typeof(GetCommands.GetTemplateCommand)
     , typeof(GetCommands.GetPasswordCommand)
+    , typeof(GetCommands.GetOtpCommand)
     , typeof(GetCommands.GetVaultCommand)
     , typeof(GetCommands.GetRecordCommand)
     )]

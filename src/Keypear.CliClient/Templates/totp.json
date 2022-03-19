@@ -1,0 +1,18 @@
+{
+  "fields": [
+    {
+      // The TOTP Config should start with `v1` indicator
+      // and then followed by the TOTP Step and Size values,
+      // all of which should be separated by semicolons (;)
+      "name": "kypr::totp::config",
+      "type": "text",
+      "value": "v1;30;6"
+    },
+    {
+      // The TOTP Seed is the Base32-encoded secret key
+      "name": "kypr::totp::seed",
+      "type": "hidden",
+      "value": "I65V U7K5 ZQL7 WB4E"
+    }
+  ]
+}

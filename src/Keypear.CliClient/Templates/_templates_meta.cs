@@ -7,6 +7,7 @@ using Keypear.CliClient.Templates;
 
 [assembly: Template("record", "basic record with all possible input fields")]
 [assembly: Template("password", "password generator input parameters")]
+[assembly: Template("totp", "custom fields for Time-based One-Time Password (TOTP) generation")]
 
 
 namespace Keypear.CliClient.Templates;

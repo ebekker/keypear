@@ -19,7 +19,6 @@ public class GetRecordCommand
     [Option]
     public string? Vault { get; set; }
 
-
     [Option]
     [Required]
     public string? Record { get; set; }

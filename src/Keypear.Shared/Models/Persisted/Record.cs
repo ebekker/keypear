@@ -11,6 +11,8 @@ public class Record
 
     public DateTime? CreatedDateTime { get; set; }
 
+    public DateTime? DeletedDateTime { get; set; }
+
     public byte[]? SummaryEnc { get; set; }
     public byte[]? ContentEnc { get; set; }
 }

@@ -10,8 +10,4 @@ public class VaultDetails
     public byte[]? SecretKeyEnc { get; set; }
 
     public byte[]? SummaryEnc { get; set; }
-
-    public byte[]? FastContentEnc { get; set; }
-
-    public byte[]? FullContentEnc { get; set; }
 }

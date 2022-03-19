@@ -168,15 +168,10 @@ public class KyprClient : IDisposable
         vault.SummarySer = KpMsgPack.Ser(vault.Summary);
         vault.SummaryEnc = _ske.Encrypt(vault.SummarySer, vault.SecretKey);
 
-        var fastContent = KpMsgPack.Ser(vault.Records.Select(x => x.Summary).ToList());
-        var fullContent = KpMsgPack.Ser(vault.Records.Select(x => x.Content).ToList());
-
         var details = await _server.CreateVaultAsync(new()
         {
             SecretKeyEnc = vault.SecretKeyEnc,
             SummaryEnc = vault.SummaryEnc,
-            FastContentEnc = _ske.Encrypt(fastContent, vault.SecretKey),
-            FullContentEnc = _ske.Encrypt(fullContent, vault.SecretKey),
         });
 
         vault.Id = details.VaultId;

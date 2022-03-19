@@ -11,11 +11,9 @@ public class Vault
 
     public DateTime? CreatedDateTime { get; set; }
 
+    public DateTime? DeletedDateTime { get; set; }
+
     public Guid CreatedBy { get; set; }
 
     public byte[]? SummaryEnc { get; set; }
-    
-    public byte[]? FastContentEnc { get; set; }
-
-    public byte[]? FullContentEnc { get; set; }
 }

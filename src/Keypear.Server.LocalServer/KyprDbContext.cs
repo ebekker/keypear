@@ -11,7 +11,8 @@ public class KyprDbContext : DbContext
     public KyprDbContext()
     { }
 
-    public KyprDbContext(DbContextOptions options) : base(options)
+    public KyprDbContext(DbContextOptions<KyprDbContext> options)
+        : base(options)
     { }
 
     public DbSet<Account> Accounts { get; set; } = default!;
@@ -21,6 +22,16 @@ public class KyprDbContext : DbContext
     public DbSet<Grant>  Grants { get; set; } = default!;
 
     public DbSet<Record> Records { get; set; } = default!;
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // This is necessary for supporting EF Core Migrations tooling
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseSqlite("Filename=:memory:");
+        }
+        base.OnConfiguring(optionsBuilder);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

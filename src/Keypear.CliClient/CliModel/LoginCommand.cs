@@ -10,11 +10,13 @@ namespace Keypear.CliClient.CliModel;
 
 public class LoginCommand
 {
+    private readonly MainCommand _main;
     private readonly IConsole _console;
     private readonly Common _common;
 
-    public LoginCommand(IConsole console, Common common)
+    public LoginCommand(MainCommand main, IConsole console, Common common)
     {
+        _main = main;
         _console = console;
         _common = common;
     }
@@ -33,19 +35,13 @@ public class LoginCommand
             Password = Prompt.GetPassword("Master Password: ");
         }
 
-        var _client = _common.GetClient();
+        var sess = _main.GetSession();
+        using var client = sess.GetClient();
 
-        await _client.AuthenticateAccountAsync(Email!, Password);
-        await _client.RefreshVaultsAsync();
+        await client.AuthenticateAccountAsync(Email!, Password);
+        await client.RefreshVaultsAsync();
 
-        var sess = new CliSession();
-        sess.Init(new()
-        {
-            ServerSession = _client.Session,
-            Account = _client.Account,
-            Vaults = _client.Vaults
-        });
-
+        sess.Init(client);
         sess.Save();
 
         var sessKey = sess.SessionEnvVar;

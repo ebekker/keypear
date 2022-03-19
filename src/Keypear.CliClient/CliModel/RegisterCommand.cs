@@ -14,12 +14,12 @@ namespace Keypear.CliClient.CliModel;
     Description = "create a new account")]
 class RegisterCommand
 {
+    private readonly MainCommand _main;
     private readonly IConsole _console;
-    private readonly KyprClient _client;
 
-    public RegisterCommand(IConsole console, KyprClient client)
+    public RegisterCommand(MainCommand main, IConsole console)
     {
-        _client = client;
+        _main = main;
         _console = console;
     }
 
@@ -42,17 +42,13 @@ class RegisterCommand
             }
         }
 
-        await _client.CreateAccountAsync(Email!, Password);
+        var sess = _main.GetSession();
+        using var client = sess.GetClient();
 
-        var sess = new CliSession();
-        sess.Init(new()
-        {
-            ServerSession = _client.Session,
-            Account = _client.Account,
-            Vaults = _client.Vaults
-        });
-
+        await client.CreateAccountAsync(Email!, Password);
+        sess.Init(client);
         sess.Save();
+
         var sessKey = sess.SessionEnvVar;
         _console.WriteLine($"$ export KYPR_SESSION = \"{sessKey}\"");
         _console.WriteLine($"> $env:KYPR_SESSION = \"{sessKey}\"");

@@ -4,26 +4,31 @@ using Keypear.Shared.Models.Persisted;
 using Keypear.Shared.Models.Service;
 using Keypear.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Keypear.Server.LocalServer;
 public class ServerImpl : IKyprServer
 {
+    private readonly ILogger _logger;
     private readonly KyprDbContext _db;
     private KyprSession? _session;
     private Account? _account;
 
-    public ServerImpl(KyprDbContext db, KyprSession? session = null)
+    public ServerImpl(ILogger<ServerImpl> logger,
+        KyprDbContext db, KyprSession? session = null)
     {
+        _logger = logger;
         _db = db;
         _session = session;
 
         if (_session == null)
         {
+            _logger.LogInformation("no existing session provided");
             return;
         }
 
-        Console.WriteLine("Session:");
-        Console.WriteLine(JsonSerializer.Serialize(_session));
+        _logger.LogInformation("Session:");
+        _logger.LogInformation(JsonSerializer.Serialize(_session));
 
         var acctIdBytes = _session.SessionId!;
         var sessionKey = _session.SessionKey!;
@@ -33,7 +38,7 @@ public class ServerImpl : IKyprServer
         //}
 
         var acctId = new Guid(acctIdBytes!);
-        Console.WriteLine("Loading Account:  " + acctId);
+        _logger.LogInformation("Loading Account:  " + acctId);
         var acct = _db.Accounts.FirstOrDefault(x => x.Id == acctId);
         if (acct == null)
         {
@@ -60,7 +65,7 @@ public class ServerImpl : IKyprServer
 
         _account = acct;
 
-        Console.WriteLine("Saving Account:  " + acct.Id);
+        _logger.LogInformation("Saving Account:  " + acct.Id);
 
         _session = new()
         {
@@ -136,8 +141,6 @@ public class ServerImpl : IKyprServer
             Id = Guid.NewGuid(),
             CreatedDateTime = DateTime.Now,
             SummaryEnc = input.SummaryEnc,
-            FastContentEnc = input.FastContentEnc,
-            FullContentEnc = input.FullContentEnc,
         };
 
         var grant = new Grant
@@ -157,9 +160,30 @@ public class ServerImpl : IKyprServer
             VaultId = vault.Id,
             SecretKeyEnc = input.SecretKeyEnc,
             SummaryEnc = input.SummaryEnc,
-            FastContentEnc = input.FastContentEnc,
-            FullContentEnc = input.FullContentEnc,
         };
+    }
+
+    public async Task<Guid> SaveVaultAsync(VaultDetails input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
+        KpCommon.ThrowIfNull(input.VaultId);
+
+        var grant = await _db.Grants
+            .Include(x => x.Vault)
+            .Where(x => x.VaultId == input.VaultId
+                    && x.AccountId == _account.Id).SingleOrDefaultAsync();
+
+        if (grant == null)
+        {
+            throw new Exception("invalid or inaccessible Vault reference");
+        }
+
+        var vault = grant.Vault!;
+        vault.SummaryEnc = input.SummaryEnc;
+        await _db.SaveChangesAsync();
+
+        return vault.Id;
     }
 
     public async Task<Guid[]> ListVaultsAsync()
@@ -171,7 +195,7 @@ public class ServerImpl : IKyprServer
 
     public async Task<VaultDetails?> GetVaultAsync(Guid vaultId)
     {
-        KpCommon.ThrowIfNull(_account, "client is not authenticated");
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
 
         var grant = await _db.Grants
             .Include(x => x.Vault)
@@ -188,14 +212,12 @@ public class ServerImpl : IKyprServer
             VaultId = grant.Vault!.Id,
             SecretKeyEnc = grant.SecretKeyEnc,
             SummaryEnc = grant.Vault.SummaryEnc,
-            FastContentEnc = grant.Vault.FastContentEnc,
-            FullContentEnc = grant.Vault.FullContentEnc,
         };
     }
 
     public async Task<RecordDetails> SaveRecordAsync(RecordDetails input)
     {
-        KpCommon.ThrowIfNull(_account, "client is not authenticated");
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
         KpCommon.ThrowIfNull(input.VaultId);
 
         var grant = await _db.Grants
@@ -233,7 +255,7 @@ public class ServerImpl : IKyprServer
 
     public async Task<RecordDetails[]> GetRecordsAsync(Guid vaultId)
     {
-        KpCommon.ThrowIfNull(_account, "client is not authenticated");
+        KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
 
         var grant = await _db.Grants
             .Include(x => x.Vault)

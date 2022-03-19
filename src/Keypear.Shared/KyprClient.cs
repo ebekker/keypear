@@ -180,6 +180,26 @@ public class KyprClient : IDisposable
         return vault;
     }
 
+    public async Task<Guid> SaveVaultAsync(Vault vault)
+    {
+        ArgumentNullException.ThrowIfNull(vault);
+
+        if (IsVaultLocked(vault))
+        {
+            throw new InvalidOperationException("cannot access locked Vault");
+        }
+
+        vault.SummarySer = KpMsgPack.Ser(vault.Summary);
+        vault.SummaryEnc = _ske.Encrypt(vault.SummarySer, vault.SecretKey!);
+
+        return await _server.SaveVaultAsync(new()
+        {
+            VaultId = vault.Id,
+            SecretKeyEnc = vault.SecretKey,
+            SummaryEnc = vault.SummaryEnc,
+        });
+    }
+
     /// <summary>
     /// Refreshed vaults are initially in the locked state.
     /// </summary>
@@ -190,6 +210,7 @@ public class KyprClient : IDisposable
             throw new InvalidOperationException("no account associated with this client");
         }
 
+        // First we lock and clear any cachec Vaults
         foreach (var v in Vaults)
         {
             LockRecords(v);
@@ -276,13 +297,13 @@ public class KyprClient : IDisposable
 
     public async Task<Guid> SaveRecordAsync(Vault vault, Record record)
     {
+        ArgumentNullException.ThrowIfNull(vault);
+        ArgumentNullException.ThrowIfNull(record);
+
         if (IsVaultLocked(vault))
         {
             throw new InvalidOperationException("cannot access Records with locked Vault");
         }
-
-        ArgumentNullException.ThrowIfNull(vault);
-        ArgumentNullException.ThrowIfNull(record);
 
         record.SummarySer = KpMsgPack.Ser(record.Summary);
         record.SummaryEnc = _ske.Encrypt(record.SummarySer, vault.SecretKey!);
@@ -293,14 +314,19 @@ public class KyprClient : IDisposable
         var details = await _server.SaveRecordAsync(new()
         {
             VaultId = vault.Id,
+            RecordId = record.Id,
             SummaryEnc = record.SummaryEnc,
             ContentEnc = record.ContentEnc,
         });
 
         record.Id = details.RecordId;
-        vault.Records.Add(record);
 
-        return record.Id.Value;
+        if (!vault.Records.Any(x => x.Id == record.Id))
+        {
+            vault.Records.Add(record);
+        }
+
+        return record.Id!.Value;
     }
 
     public bool IsRecordLocked(Record record)

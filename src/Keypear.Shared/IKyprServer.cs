@@ -19,6 +19,8 @@ public interface IKyprServer : IDisposable
 
     Task<VaultDetails?> GetVaultAsync(Guid vaultId);
 
+    Task<Guid> SaveVaultAsync(VaultDetails input);
+
     Task<RecordDetails> SaveRecordAsync(RecordDetails input);
 
     Task<RecordDetails[]> GetRecordsAsync(Guid vaultId);

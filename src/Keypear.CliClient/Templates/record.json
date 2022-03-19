@@ -1,0 +1,34 @@
+﻿{
+  // descriptive title for your entry
+  "label": "",
+
+  // username, email or other identifier
+  "username": "",
+
+  // password, token or other Secret
+  "password": "",
+
+  // Site, Location or 
+  "address": "",
+
+  // Space-separated list of tags
+  "tags": "",
+
+  // Arbitrary descriptive text and notes
+  "memo": "",
+
+  // An array of zero or more custom fields
+  "fields": [
+    {
+      // descriptive field identifier
+      "name": "",
+
+      // optional, defaults to text
+      // supported types: text, hidden, bool, number, datetime
+      "type": "",
+
+      // field value
+      "value": ""
+    }
+  ]
+}

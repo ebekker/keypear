@@ -25,21 +25,24 @@ public class Common
         _db = db;
     }
 
-    public KyprClient GetClient(KyprSession? session = null)
-    {
-        if (session == null)
-        {
-            _logger.LogInformation("No Existing Session");
-        }
-        else
-        {
-            _logger.LogInformation("Existing Session:");
-            _logger.LogInformation(JsonSerializer.Serialize(session));
-        }
+    public static IServiceProvider? AdditionalServices { get; set; }
 
-        var server = new Server.LocalServer.ServerImpl(_db, session);
-        var client = new KyprClient(server);
 
-        return client;
-    }
+    //public KyprClient GetClient(KyprSession? session = null)
+    //{
+    //    if (session == null)
+    //    {
+    //        _logger.LogInformation("No Existing Session");
+    //    }
+    //    else
+    //    {
+    //        _logger.LogInformation("Existing Session:");
+    //        _logger.LogInformation(JsonSerializer.Serialize(session));
+    //    }
+
+    //    var server = new Server.LocalServer.ServerImpl(_db, session);
+    //    var client = new KyprClient(server);
+
+    //    return client;
+    //}
 }

@@ -35,6 +35,13 @@ var services = new ServiceCollection()
     .AddScoped<Common>()
     .BuildServiceProvider();
 
+var logger = services.GetRequiredService<ILogger<Program>>();
+
+// Unfortunately to get around a bug:
+//    https://github.com/natemcmaster/CommandLineUtils/issues/448
+Common.AdditionalServices = services;
+
+logger.LogInformation("building CLI command model");
 var app = new CommandLineApplication<MainCommand>();
 app.HelpTextGenerator = new DefaultHelpTextGenerator
 {
@@ -44,6 +51,8 @@ app.HelpTextGenerator = new DefaultHelpTextGenerator
 app.HelpOption();
 app.Conventions
     .UseDefaultConventions()
-    .UseConstructorInjection(services);
+    .UseConstructorInjection(services)
+    ;
 
+logger.LogInformation("invoking app execution");
 return await app.ExecuteAsync(args);

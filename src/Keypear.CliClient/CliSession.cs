@@ -16,10 +16,12 @@ public class CliSession
 
     private readonly SecretKeyEncryption _ske = new();
 
+    private readonly Func<KyprSession?, IKyprServer> _serverFactory;
     private byte[]? _localSessionKey;
 
-    public CliSession(byte[]? sessionKey = null)
+    public CliSession(Func<KyprSession?, IKyprServer> serverFactory, byte[]? sessionKey = null)
     {
+        _serverFactory = serverFactory;
         _localSessionKey = sessionKey;
     }
 
@@ -40,10 +42,32 @@ public class CliSession
         }
     }
 
+    public KyprClient GetClient(bool skipCopyToClient = false)
+    {
+        var session = Details?.ServerSession;
+
+        var client = new KyprClient(_serverFactory(session));
+        if (!skipCopyToClient && this.Details != null)
+        {
+            CopyToClient(client);
+        }
+        return client;
+    }
+
     public void Clear()
     {
         _localSessionKey = null;
         Details = null;
+    }
+
+    public void Init(KyprClient client)
+    {
+        Init(new SessionDetails
+        {
+            ServerSession = client.Session,
+            Account = client.Account,
+            Vaults = client.Vaults,
+        });
     }
 
     public void Init(SessionDetails? details)
@@ -52,20 +76,25 @@ public class CliSession
         Details = details ?? new();
     }
 
-    public void Save()
+    public void Save(KyprClient? copyFromClient = null)
     {
         if (!IsInit)
         {
             throw new InvalidOperationException("session has not been initialized or loaded");
         }
 
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "_TMP", SessionFileName);
+        var filePath = CalculateSessionDataPath();
 
-        //SaveTestJson(filePath);
+        if (copyFromClient != null)
+        {
+            CopyFromClient(copyFromClient);
+        }
+
         SaveMsgPackEnc(filePath);
+        //SaveTestJson(filePath);
     }
 
-    public void Load()
+    public void Load(KyprClient? copyToClient = null)
     {
         if (!ResolveSessionKey())
         {
@@ -76,19 +105,73 @@ public class CliSession
         {
             throw new Exception("could not resolve local Session Data");
         }
+
+        if (copyToClient != null && this.Details != null)
+        {
+            CopyToClient(copyToClient);
+        }
     }
 
-    public bool TryLoad()
+    public bool TryLoad(KyprClient? copyToClient = null)
     {
         try
         {
-            return ResolveSessionKey() && ResolveSessionData();
+            if (ResolveSessionKey() && ResolveSessionData())
+            {
+                if (copyToClient != null && this.Details != null)
+                {
+                    CopyToClient(copyToClient);
+                }
+
+                return true;
+            }
         }
         catch (Exception)
+        { }
+
+        return false;
+    }
+
+    public void CopyFromClient(KyprClient client)
+    {
+        if (Details == null)
+        {
+            Details = new();
+        }
+
+        Details.ServerSession = client.Session;
+        Details.Account = client.Account;
+        Details.Vaults = client.Vaults;
+    }
+
+    public bool CopyToClient(KyprClient client)
+    {
+        if (this.Details != null)
+        {
+            client.Session = this.Details.ServerSession;
+            client.Account = this.Details.Account;
+            client.Vaults = this.Details.Vaults;
+            return true;
+        }
+        return false;
+    }
+
+    public bool Delete()
+    {
+        var filePath = CalculateSessionDataPath();
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+            return true;
+        }
+        else
         {
             return false;
         }
     }
+
+    private string CalculateSessionDataPath() =>
+        Path.Combine(Directory.GetCurrentDirectory(), "_TMP", SessionFileName);
 
     private bool ResolveSessionKey()
     {
@@ -106,14 +189,14 @@ public class CliSession
 
     private bool ResolveSessionData()
     {
-        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "_TMP", SessionFileName);
+        var filePath = CalculateSessionDataPath();
         if (!File.Exists(filePath))
         {
             return false;
         }
 
-        //LoadTestJson(filePath);
         LoadMsgPackEnc(filePath);
+        //LoadTestJson(filePath);
 
         return true;
     }

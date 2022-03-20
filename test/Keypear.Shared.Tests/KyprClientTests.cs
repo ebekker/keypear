@@ -6,6 +6,7 @@ using Keypear.Server.LocalServer;
 using Keypear.Shared.Models.InMemory;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
 namespace Keypear.Shared.Tests;
@@ -13,8 +14,9 @@ namespace Keypear.Shared.Tests;
 public class KyprClientTests : IDisposable
 {
     private readonly ITestOutputHelper _testOut;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly SqliteConnection _conn;
-    private readonly DbContextOptions _opts;
+    private readonly DbContextOptions<KyprDbContext> _opts;
     private readonly KyprDbContext _db1;
     private readonly KyprDbContext _db2;
     private readonly IKyprServer _server1;
@@ -23,6 +25,7 @@ public class KyprClientTests : IDisposable
     public KyprClientTests(ITestOutputHelper testOutputHelper)
     {
         _testOut = testOutputHelper;
+        _loggerFactory = new LoggerFactory();
 
         _conn = new SqliteConnection("Filename=:memory:");
         _conn.Open();
@@ -33,11 +36,11 @@ public class KyprClientTests : IDisposable
 
         _db1 = new KyprDbContext(_opts);
         _db1.Database.EnsureCreated();
-        _server1 = new ServerImpl(_db1);
+        _server1 = new ServerImpl(_loggerFactory.CreateLogger<ServerImpl>(), _db1);
 
         _db2 = new KyprDbContext(_opts);
         _db2.Database.EnsureCreated();
-        _server2 = new ServerImpl(_db2);
+        _server2 = new ServerImpl(_loggerFactory.CreateLogger<ServerImpl>(), _db2);
     }
 
     public void Dispose()
@@ -410,7 +413,7 @@ public class KyprClientTests : IDisposable
             }
         }
 
-        using var server = new ServerImpl(_db2, session);
+        using var server = new ServerImpl(_loggerFactory.CreateLogger<ServerImpl>(), _db2, session);
         using var client2 = new KyprClient(server);
 
         client2.Session = session;

@@ -3,8 +3,6 @@
 
 using Keypear.CliClient;
 using Keypear.CliClient.CliModel;
-using Keypear.ClientShared;
-using McMaster.Extensions.CommandLineUtils;
 using McMaster.Extensions.CommandLineUtils.HelpText;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

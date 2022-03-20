@@ -1,6 +1,7 @@
 ﻿using Keypear.Shared.Krypto;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -9,14 +10,16 @@ namespace Keypear.Server.LocalServer.Tests;
 public class LocalServerTests : IDisposable
 {
     private readonly ITestOutputHelper _testOut;
+    private readonly ILoggerFactory _loggerFactory;
     private readonly SqliteConnection _conn;
-    private readonly DbContextOptions _opts;
+    private readonly DbContextOptions<KyprDbContext> _opts;
     private readonly KyprDbContext _db;
     private readonly ServerImpl _server;
 
     public LocalServerTests(ITestOutputHelper testOutputHelper)
     {
         _testOut = testOutputHelper;
+        _loggerFactory = new LoggerFactory();
 
         _conn = new SqliteConnection("Filename=:memory:");
         _conn.Open();
@@ -28,7 +31,7 @@ public class LocalServerTests : IDisposable
         _db = new KyprDbContext(_opts);
         _db.Database.EnsureCreated();
 
-        _server = new(_db);
+        _server = new(_loggerFactory.CreateLogger<ServerImpl>(), _db);
     }
 
     public void Dispose()

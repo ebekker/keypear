@@ -18,11 +18,12 @@
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
     <PackageReference Include="NLog.Extensions.Logging" Version="1.7.4" />
+    <PackageReference Include="Otp.NET" Version="1.2.2" />
     <PackageReference Include="supabase-csharp" Version="0.3.2" />
+    <PackageReference Include="YamlDotNet" Version="11.2.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Keypear.ClientShared\Keypear.ClientShared.csproj" />
     <ProjectReference Include="..\Keypear.Shared\Keypear.Shared.csproj" />
     <ProjectReference Include="..\Keypear.Server.LocalServer\Keypear.Server.LocalServer.csproj" />
   </ItemGroup>

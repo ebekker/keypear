@@ -10,7 +10,7 @@ public class KyprDbContextTests : IDisposable
 {
     private readonly ITestOutputHelper _testOut;
     private readonly SqliteConnection _conn;
-    private readonly DbContextOptions _opts;
+    private readonly DbContextOptions<KyprDbContext> _opts;
     private readonly KyprDbContext _db;
 
     public KyprDbContextTests(ITestOutputHelper testOutputHelper)

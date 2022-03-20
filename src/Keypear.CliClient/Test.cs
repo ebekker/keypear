@@ -1,8 +1,6 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using Keypear.ClientShared;
-
 namespace Keypear.CliClient;
 
 class Test

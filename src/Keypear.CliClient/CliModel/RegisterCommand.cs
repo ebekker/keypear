@@ -1,12 +1,6 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using System.ComponentModel.DataAnnotations;
-using Keypear.ClientShared;
-using Keypear.Shared;
-using McMaster.Extensions.CommandLineUtils;
-using Microsoft.EntityFrameworkCore;
-
 namespace Keypear.CliClient.CliModel;
 
 [Command("register", "reg",

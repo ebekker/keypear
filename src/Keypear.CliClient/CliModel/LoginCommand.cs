@@ -1,11 +1,6 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using System.ComponentModel.DataAnnotations;
-using Keypear.ClientShared;
-using Keypear.Shared;
-using McMaster.Extensions.CommandLineUtils;
-
 namespace Keypear.CliClient.CliModel;
 
 public class LoginCommand

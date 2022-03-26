@@ -53,12 +53,23 @@ public class MainCommand
     public string? Session { get; set; }
 
     [Option(ShowInHelpText = false)]
+    public bool DestroyDb { get; set; }
+
+    [Option(ShowInHelpText = false)]
     public bool MigrateDb { get; set; }
 
     public int OnExecute(CommandLineApplication app)
     {
+        if (DestroyDb)
+        {
+            _logger.LogInformation("Destroying DB");
+            _db.Database.EnsureDeleted();
+            return 0;
+        }
+
         if (MigrateDb)
         {
+            _logger.LogInformation("Migrating DB");
             _db.Database.Migrate();
             return 0;
         }

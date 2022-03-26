@@ -203,8 +203,15 @@ public class CliSession
 
     private void SaveMsgPackEnc(string filePath)
     {
+        var fileParent = Directory.GetParent(filePath)!;
+        if (!Directory.Exists(fileParent.FullName))
+        {
+            Directory.CreateDirectory(fileParent.FullName);
+        }
+
         var dataRaw = KpMsgPack.DynSer(Details);
         var dataEnc = _ske.Encrypt(dataRaw, _localSessionKey!);
+
         File.WriteAllBytes(filePath, dataEnc);
 
         SaveTestJson(filePath + ".shdw");
@@ -225,6 +232,12 @@ public class CliSession
 
     private void SaveTestJson(string filePath)
     {
+        var fileParent = Directory.GetParent(filePath)!;
+        if (!Directory.Exists(fileParent.FullName))
+        {
+            Directory.CreateDirectory(fileParent.FullName);
+        }
+
         File.WriteAllText(filePath,
             JsonSerializer.Serialize(Details, TestJsonSerOpts));
     }

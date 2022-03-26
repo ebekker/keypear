@@ -6,6 +6,8 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace Keypear.CliClient.CliModel.NewCommands;
 
+[Command("vault",
+    Description = "creates a new Vault to contain Records.")]
 public class NewVaultCommand
 {
     private readonly MainCommand _main;

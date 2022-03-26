@@ -24,6 +24,9 @@ class RegisterCommand
     [Option]
     public string? Password { get; set; }
 
+    [Option]
+    public bool RawSession { get; set; }
+
     public async Task OnExecuteAsync()
     {
         if (string.IsNullOrWhiteSpace(Password))
@@ -36,7 +39,7 @@ class RegisterCommand
             }
         }
 
-        var sess = _main.GetSession();
+        var sess = _main.GetSession(skipLoad: true);
         using var client = sess.GetClient();
 
         await client.CreateAccountAsync(Email!, Password);
@@ -44,7 +47,15 @@ class RegisterCommand
         sess.Save();
 
         var sessKey = sess.SessionEnvVar;
-        _console.WriteLine($"$ export KYPR_SESSION = \"{sessKey}\"");
-        _console.WriteLine($"> $env:KYPR_SESSION = \"{sessKey}\"");
+
+        if (RawSession)
+        {
+            _console.WriteLine(sessKey);
+        }
+        else
+        {
+            _console.WriteLine($"$ export KYPR_SESSION = \"{sessKey}\"");
+            _console.WriteLine($"> $env:KYPR_SESSION = \"{sessKey}\"");
+        }
     }
 }

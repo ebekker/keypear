@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+// For nullable basic types:
+import "google/protobuf/wrappers.proto";
+
+package kypr;
+
+option csharp_namespace = "Keypear.Server.GrpcServer.RpcModel";
+
+// RPC Methods
+
+service KyprCore {
+    rpc CreateAccount       (CreateAccountInput)       returns (CreateAccountResult);
+    rpc AuthenticateAccount (AuthenticateAccountInput) returns (AuthenticateAccountResult);
+    rpc GetAccount          (GetAccountInput)          returns (GetAccountResult);
+    rpc CreateVault         (CreateVaultInput)         returns (CreateVaultResult);
+    rpc SaveVault           (SaveVaultInput)           returns (SaveVaultResult);
+    rpc ListVaults          (ListVaultsInput)          returns (ListVaultsResult);
+    rpc GetVault            (GetVaultInput)            returns (GetVaultResult);
+    rpc SaveRecord          (SaveRecordInput)          returns (SaveRecordResult);
+    rpc GetRecords          (GetRecordsInput)          returns (GetRecordsResult);
+}
+
+// RPC Method Inputs & Results
+
+message CreateAccountInput {
+    AccountDetails account = 1;
+}
+
+message CreateAccountResult {
+    AccountDetails account = 1;
+}
+
+message AuthenticateAccountInput {
+    string account_id = 1;
+}
+
+message AuthenticateAccountResult {
+    KyprSession session = 1;
+}
+
+message GetAccountInput {
+    string username = 1;
+}
+
+message GetAccountResult {
+    AccountDetails account = 1;
+}
+
+message CreateVaultInput {
+    VaultDetails vault = 1;
+}
+
+message CreateVaultResult {
+    VaultDetails vault = 1;
+}
+
+message SaveVaultInput {
+    VaultDetails vault = 1;
+}
+
+message SaveVaultResult {
+    string vault_id = 1;
+}
+
+message ListVaultsInput {
+    // n/a
+}
+
+message ListVaultsResult {
+    repeated string vault_ids = 1;
+}
+
+message GetVaultInput {
+    string vault_id = 1;
+}
+
+message GetVaultResult {
+    VaultDetails vault = 1;
+}
+
+message SaveRecordInput {
+    RecordDetails record = 1;
+}
+
+message SaveRecordResult {
+    RecordDetails record = 1;
+}
+
+message GetRecordsInput {
+    string vault_id = 1;
+}
+
+message GetRecordsResult {
+    repeated RecordDetails records = 1;
+}
+
+// Entity Definitions
+
+message KyprSession {
+    string session_id = 1;
+    bytes session_key = 2;
+}
+
+message AccountDetails {
+    google.protobuf.StringValue account_id          = 1;
+    google.protobuf.StringValue username            = 2;
+    google.protobuf.BytesValue  master_key_salt     = 3;
+    google.protobuf.BytesValue  public_key          = 4;
+    google.protobuf.BytesValue  private_key_enc     = 5;
+    google.protobuf.BytesValue  sig_public_key      = 6;
+    google.protobuf.BytesValue  sig_private_key_enc = 7;
+}
+
+message VaultDetails {
+    google.protobuf.StringValue vault_id          = 1;
+    google.protobuf.BytesValue  secret_key_enc    = 2;
+    google.protobuf.BytesValue  summary_enc       = 3;
+}
+
+message RecordDetails {
+    google.protobuf.StringValue vault_id          = 1;
+    google.protobuf.StringValue record_id         = 2;
+    google.protobuf.BytesValue  summary_enc       = 3;
+    google.protobuf.BytesValue  content_enc       = 4;
+}

@@ -1,7 +1,7 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-using P = Keypear.Shared.Models.Persisted;
+using P = Keypear.Server.Shared.Models.Persisted;
 using M = Keypear.Shared.Models.InMemory;
 using I = Keypear.Shared.Models.Inner;
 using Keypear.Shared.Krypto;

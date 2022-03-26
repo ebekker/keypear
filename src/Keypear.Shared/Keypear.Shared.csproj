@@ -10,6 +10,7 @@
     <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="MessagePack" Version="2.3.85" />
     <PackageReference Include="MessagePackAnalyzer" Version="2.3.85" />
+    <PackageReference Include="SimpleBase" Version="3.1.0" />
     <PackageReference Include="Sodium.Core" Version="1.2.3" />
   </ItemGroup>
 

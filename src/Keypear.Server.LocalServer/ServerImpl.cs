@@ -11,6 +11,7 @@ public class ServerImpl : IKyprServer
 {
     private readonly ILogger _logger;
     private readonly KyprDbContext _db;
+
     private KyprSession? _session;
     private Account? _account;
 
@@ -49,34 +50,38 @@ public class ServerImpl : IKyprServer
     }
 
     public void Dispose()
-    { }
-
-    public async Task<KyprSession> AuthenticateAccountAsync(AccountDetails input)
     {
-        KpCommon.ThrowIfNull(input.AccountId);
+        _db.Dispose();
+    }
+
+    public KyprSession? Session
+    {
+        get => _session;
+        set => _session = value;
+    }
+
+    public async Task<AccountDetails?> GetAccountAsync(string username)
+    {
+        ArgumentNullException.ThrowIfNull(username);
 
         var acct = await _db.Accounts.FirstOrDefaultAsync(
-            x => x.Id == input.AccountId.Value);
+            x => x.Username == username);
 
         if (acct == null)
         {
-            throw new Exception("invalid Account");
+            return null;
         }
 
-        _account = acct;
-
-        _logger.LogInformation("Saving Account:  " + acct.Id);
-
-        _session = new()
+        return new AccountDetails
         {
-            SessionId = acct.Id.ToByteArray(),
-            SessionKey = Guid.NewGuid().ToByteArray(),
+            AccountId = acct.Id,
+            Username = acct.Username,
+            MasterKeySalt = acct.MasterKeySalt,
+            PublicKey = acct.PublicKey,
+            PrivateKeyEnc = acct.PrivateKeyEnc,
+            SigPublicKey = acct.SigPublicKey,
+            SigPrivateKeyEnc = acct.SigPrivateKeyEnc,
         };
-        //for (var i = 0; i < _session.SessionId.Length; i++)
-        //{
-        //    _session.SessionId[i] ^= _session.SessionKey[i];
-        //}
-        return _session;
     }
 
     public async Task<AccountDetails> CreateAccountAsync(AccountDetails input)
@@ -108,28 +113,32 @@ public class ServerImpl : IKyprServer
         return (await GetAccountAsync(input.Username))!;
     }
 
-    public async Task<AccountDetails?> GetAccountAsync(string username)
+    public async Task<KyprSession> AuthenticateAccountAsync(AccountDetails input)
     {
-        ArgumentNullException.ThrowIfNull(username);
+        KpCommon.ThrowIfNull(input.AccountId);
 
         var acct = await _db.Accounts.FirstOrDefaultAsync(
-            x => x.Username == username);
+            x => x.Id == input.AccountId.Value);
 
         if (acct == null)
         {
-            return null;
+            throw new Exception("invalid Account");
         }
 
-        return new AccountDetails
+        _account = acct;
+
+        _logger.LogInformation("Saving Account:  " + acct.Id);
+
+        _session = new()
         {
-            AccountId = acct.Id,
-            Username = acct.Username,
-            MasterKeySalt = acct.MasterKeySalt,
-            PublicKey = acct.PublicKey,
-            PrivateKeyEnc = acct.PrivateKeyEnc,
-            SigPublicKey = acct.SigPublicKey,
-            SigPrivateKeyEnc = acct.SigPrivateKeyEnc,
+            SessionId = acct.Id.ToString(),
+            SessionKey = Guid.NewGuid().ToByteArray(),
         };
+        //for (var i = 0; i < _session.SessionId.Length; i++)
+        //{
+        //    _session.SessionId[i] ^= _session.SessionKey[i];
+        //}
+        return _session;
     }
 
     public async Task<VaultDetails> CreateVaultAsync(VaultDetails input)
@@ -158,8 +167,8 @@ public class ServerImpl : IKyprServer
         return new()
         {
             VaultId = vault.Id,
-            SecretKeyEnc = input.SecretKeyEnc,
-            SummaryEnc = input.SummaryEnc,
+            SecretKeyEnc = grant.SecretKeyEnc,
+            SummaryEnc = vault.SummaryEnc,
         };
     }
 
@@ -171,8 +180,9 @@ public class ServerImpl : IKyprServer
 
         var grant = await _db.Grants
             .Include(x => x.Vault)
-            .Where(x => x.VaultId == input.VaultId
-                    && x.AccountId == _account.Id).SingleOrDefaultAsync();
+            .Where(x => x.AccountId == _account.Id
+                    && x.VaultId == input.VaultId)
+            .SingleOrDefaultAsync();
 
         if (grant == null)
         {
@@ -190,7 +200,10 @@ public class ServerImpl : IKyprServer
     {
         KpCommon.ThrowIfNull(_account, messageFormat: "client is not authenticated");
 
-        return await _db.Vaults.Select(x => x.Id).ToArrayAsync();
+        return await _db.Grants
+            .Where(x => x.AccountId == _account.Id)
+            .Select(x => x.VaultId)
+            .ToArrayAsync();
     }
 
     public async Task<VaultDetails?> GetVaultAsync(Guid vaultId)
@@ -199,8 +212,9 @@ public class ServerImpl : IKyprServer
 
         var grant = await _db.Grants
             .Include(x => x.Vault)
-            .Where(x => x.VaultId == vaultId
-                    && x.AccountId == _account.Id).SingleOrDefaultAsync();
+            .Where(x => x.AccountId == _account.Id
+                    && x.VaultId == vaultId)
+            .SingleOrDefaultAsync();
 
         if (grant == null)
         {
@@ -222,8 +236,9 @@ public class ServerImpl : IKyprServer
 
         var grant = await _db.Grants
             .Include(x => x.Vault)
-            .Where(x => x.VaultId == input.VaultId
-                    && x.AccountId == _account.Id).SingleOrDefaultAsync();
+            .Where(x => x.AccountId == _account.Id
+                    && x.VaultId == input.VaultId)
+            .SingleOrDefaultAsync();
 
         if (grant == null)
         {
@@ -259,8 +274,9 @@ public class ServerImpl : IKyprServer
 
         var grant = await _db.Grants
             .Include(x => x.Vault)
-            .Where(x => x.VaultId == vaultId
-                    && x.AccountId == _account.Id).SingleOrDefaultAsync();
+            .Where(x => x.AccountId == _account.Id
+                    && x.VaultId == vaultId)
+            .SingleOrDefaultAsync();
 
         if (grant == null)
         {

@@ -22,7 +22,12 @@ public class KyprClient : IDisposable
         _server = server;
     }
 
-    public KyprSession? Session { get; set; }
+    public KyprSession? Session
+    {
+        get => _server.Session;
+        set => _server.Session = value;
+    }
+
     public Account? Account { get; set; }
     public List<Vault> Vaults { get; set; } = new();
 

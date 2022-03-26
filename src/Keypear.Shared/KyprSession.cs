@@ -5,6 +5,6 @@ namespace Keypear.Shared;
 
 public class KyprSession
 {
-    public byte[]? SessionId { get; set; }
+    public string? SessionId { get; set; }
     public byte[]? SessionKey { get; set; }
 }

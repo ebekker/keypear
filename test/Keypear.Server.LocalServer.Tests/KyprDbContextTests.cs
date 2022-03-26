@@ -1,4 +1,4 @@
-﻿using Keypear.Shared.Models.Persisted;
+﻿using Keypear.Server.Shared.Models.Persisted;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

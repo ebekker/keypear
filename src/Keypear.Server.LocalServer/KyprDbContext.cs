@@ -19,7 +19,7 @@ public class KyprDbContext : DbContext
 
     public DbSet<Vault> Vaults { get; set; } = default!;
 
-    public DbSet<Grant>  Grants { get; set; } = default!;
+    public DbSet<Grant> Grants { get; set; } = default!;
 
     public DbSet<Record> Records { get; set; } = default!;
 

@@ -99,7 +99,7 @@ public class PakeClient
 
         return new()
         {
-            SessionId = biA.ToByteArray(),
+            SessionId = SimpleBase.Base32.Crockford.Encode(biA.ToByteArray()),
             SessionKey = skey.ToByteArray(),
         };
     }

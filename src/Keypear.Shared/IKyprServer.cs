@@ -7,6 +7,8 @@ namespace Keypear.Shared;
 
 public interface IKyprServer : IDisposable
 {
+    KyprSession? Session { get; set; }
+
     Task<KyprSession> AuthenticateAccountAsync(AccountDetails input);
 
     Task<AccountDetails> CreateAccountAsync(AccountDetails input);

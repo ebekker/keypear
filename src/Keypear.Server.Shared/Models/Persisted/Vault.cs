@@ -1,18 +1,19 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-namespace Keypear.Shared.Models.Persisted;
+namespace Keypear.Server.Shared.Models.Persisted;
 
-public class Record
+public class Vault
 {
     public Guid Id { get; set; }
 
-    public Guid VaultId { get; set; }
+    public Guid? TenantId { get; set; }
 
     public DateTime? CreatedDateTime { get; set; }
 
     public DateTime? DeletedDateTime { get; set; }
 
+    public Guid CreatedBy { get; set; }
+
     public byte[]? SummaryEnc { get; set; }
-    public byte[]? ContentEnc { get; set; }
 }

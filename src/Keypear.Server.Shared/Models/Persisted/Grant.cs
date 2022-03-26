@@ -1,7 +1,7 @@
 ﻿// Keypear Security Tool.
 // Copyright (C) Eugene Bekker.
 
-namespace Keypear.Shared.Models.Persisted;
+namespace Keypear.Server.Shared.Models.Persisted;
 
 public class Grant
 {

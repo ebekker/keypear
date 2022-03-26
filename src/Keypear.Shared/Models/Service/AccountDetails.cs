@@ -18,5 +18,4 @@ public class AccountDetails
     public byte[]? SigPublicKey { get; set; }
 
     public byte[]? SigPrivateKeyEnc { get; set; }
-
 }

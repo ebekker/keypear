@@ -1,0 +1,19 @@
+{
+  // descriptive title for your entry
+  "label": "Record #1",
+
+  // username, email or other identifier
+  "username": "jdoe1@example.com",
+
+  // password, token or other Secret
+  "password": "foobar1",
+
+  // Site, Location or 
+  "address": "",
+
+  // Space-separated list of tags
+  "tags": "",
+
+  // Arbitrary descriptive text and notes
+  "memo": "",
+}

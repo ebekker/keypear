@@ -1,0 +1,45 @@
+{
+  // descriptive title for your entry
+  "label": "TOTP MFA Authentication Challenge",
+
+  // username, email or other identifier
+  "username": "totp@authenticationtest.com",
+
+  // password, token or other Secret
+  "password": "pa$$w0rd",
+
+  // Site, Location or 
+  "address": "https://authenticationtest.com/totpChallenge/",
+
+  // Space-separated list of tags
+  "tags": "",
+
+  // Arbitrary descriptive text and notes
+  "memo": "test MFA",
+
+  // An array of zero or more custom fields
+  "fields": [
+    {
+      // descriptive field identifier
+      "name": "kypr::totp::config",
+
+      // optional, defaults to text
+      // supported types: text, hidden, bool, number, datetime
+      "type": "text",
+
+      // field value
+      "value": "v1;30;6"
+    },
+    {
+      // descriptive field identifier
+      "name": "kypr::totp::seed",
+
+      // optional, defaults to text
+      // supported types: text, hidden, bool, number, datetime
+      "type": "hidden",
+
+      // field value
+      "value": "I65V U7K5 ZQL7 WB4E"
+    }
+  ]
+}

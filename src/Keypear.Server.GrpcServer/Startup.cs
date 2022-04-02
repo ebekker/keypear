@@ -5,6 +5,7 @@ using Keypear.Server.GrpcServer.Services;
 using Keypear.Server.Shared.Data;
 using Keypear.Shared.Utils;
 using Microsoft.EntityFrameworkCore;
+using Keypear.Server.GrpcClient;
 
 namespace Keypear.Server.GrpcServer;
 
@@ -59,7 +60,10 @@ public class Startup
         // Additional configuration is required to successfully run gRPC on macOS.
         // For instructions on how to configure Kestrel and gRPC clients on macOS,
         // visit https://go.microsoft.com/fwlink/?linkid=2099682
-        services.AddGrpc();
+        services.AddGrpc(options =>
+        {
+            options.Interceptors.Add<GrpcServerInterceptor>();
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)

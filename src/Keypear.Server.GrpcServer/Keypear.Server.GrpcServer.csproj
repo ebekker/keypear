@@ -13,6 +13,8 @@
 
   <ItemGroup>
     <Compile Include="..\Keypear.Server.GrpcClient\GrpcUtils.cs" />
+    <Compile Include="..\Keypear.Server.GrpcClient\ISessionSecuredMessage.cs" />
+    <Compile Include="..\Keypear.Server.GrpcClient\SessionSecuredMessages.cs" />
   </ItemGroup>
 
   <ItemGroup>

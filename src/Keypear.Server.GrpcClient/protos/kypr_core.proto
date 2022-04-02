@@ -40,66 +40,137 @@ message AuthenticateAccountResult {
 }
 
 message GetAccountInput {
-    string username = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        string username = 1;
+    }
 }
 
 message GetAccountResult {
-    AccountDetails account = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        AccountDetails account = 1;
+    }
 }
 
 message CreateVaultInput {
-    VaultDetails vault = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        VaultDetails vault = 1;
+    }
 }
 
 message CreateVaultResult {
-    VaultDetails vault = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        VaultDetails vault = 1;
+    }
 }
 
 message SaveVaultInput {
-    VaultDetails vault = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        VaultDetails vault = 1;
+    }
 }
 
 message SaveVaultResult {
-    string vault_id = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        string vault_id = 1;
+    }
 }
 
 message ListVaultsInput {
-    // n/a
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        // n/a
+    }
 }
 
 message ListVaultsResult {
-    repeated string vault_ids = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        repeated string vault_ids = 1;
+    }
 }
 
 message GetVaultInput {
-    string vault_id = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        string vault_id = 1;
+    }
 }
 
 message GetVaultResult {
-    VaultDetails vault = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        VaultDetails vault = 1;
+    }
 }
 
 message SaveRecordInput {
-    RecordDetails record = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        RecordDetails record = 1;
+    }
 }
 
 message SaveRecordResult {
-    RecordDetails record = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        RecordDetails record = 1;
+    }
 }
 
 message GetRecordsInput {
-    string vault_id = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        string vault_id = 1;
+    }
 }
 
 message GetRecordsResult {
-    repeated RecordDetails records = 1;
+    Inner inner_message = 1;
+    bytes inner_message_enc = 2;
+
+    message Inner {
+        repeated RecordDetails records = 1;
+    }
 }
 
 // Entity Definitions
 
 message KyprSession {
     string session_id = 1;
-    bytes session_key = 2;
+    string encryption_algor = 2;
+    bytes encryption_key = 3;
 }
 
 message AccountDetails {

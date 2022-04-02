@@ -6,5 +6,6 @@ namespace Keypear.Shared;
 public class KyprSession
 {
     public string? SessionId { get; set; }
+    public string? SessionAlgor { get; set; }
     public byte[]? SessionKey { get; set; }
 }

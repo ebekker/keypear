@@ -21,20 +21,30 @@ public class SrpServer
         this._N = N;
     }
 
-    public BigInteger GenerateBValues(BigInteger v)
+    public SrpServer(Func<byte[], byte[]> H, int g, BigInteger N, BigInteger B, byte[] state)
+    {
+        this._H = H;
+        this._g = g;
+        this._N = N;
+
+        this._B = B;
+        this._b = new BigInteger(state);
+    }
+
+    public BigInteger GenerateBValues(BigInteger v, out byte[] state)
     {
         // TODO: this sometimes produces neg value, we need to
         // investigate, but until then this is a cheap, kludgey,
         // brute-force way to avoid that
-        var B = GenerateBValuesImpl(v);
+        var B = GenerateBValuesImpl(v, out state);
         while (B < BigInteger.Zero)
         {
-            B = GenerateBValuesImpl(v);
+            B = GenerateBValuesImpl(v, out state);
         }
         return B;
     }
 
-    private BigInteger GenerateBValuesImpl(BigInteger v)
+    private BigInteger GenerateBValuesImpl(BigInteger v, out byte[] state)
     {
         _b = BigInteger.Abs(new BigInteger(Sodium.SodiumCore.GetRandomBytes(32)));
 
@@ -48,6 +58,8 @@ public class SrpServer
 
         // B = kv + g^b
         _B = (left + right) % _N;
+
+        state = _b.ToByteArray();
 
         return _B;
     }

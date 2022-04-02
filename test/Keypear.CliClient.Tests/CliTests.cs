@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Keypear Security Tool.
+// Copyright (C) Eugene Bekker.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -85,8 +88,6 @@ public class CliTests
     {
         using var cli = new CliTester();
         await cli.InitAsync();
-
-        int ret;
 
         await cli.InvokeSuccessfullyAsync("reg", "--email", "john.doe@example.com", "--password", "foobar", "--raw-session");
         var sessionKey = cli.ReadOut();

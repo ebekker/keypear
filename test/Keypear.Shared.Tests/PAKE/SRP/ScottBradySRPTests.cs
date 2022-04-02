@@ -53,13 +53,21 @@ public class ScottBradySRPTests
         // generate password verifier to store 
         BigInteger v = client.GenerateVerifier(I, P, s);
 
-        var A = client.GenerateAValues();
+        var A = client.GenerateAValues(out var clientSrpState);
 
-        var B = server.GenerateBValues(v);
+        var B = server.GenerateBValues(v, out var serverSrpState);
 
         var clientS = client.ComputeSessionKey(I, P, s, B);
         var serverS = server.ComputeSessionKey(v, A);
         Assert.Equal(clientS, serverS);
+
+        // Restore state in new client and server
+        client = new SrpClient(hasher, g, N, A, clientSrpState);
+        server = new SrpServer(hasher, g, N, B, serverSrpState);
+        var clientS2 = client.ComputeSessionKey(I, P, s, B);
+        var serverS2 = server.ComputeSessionKey(v, A);
+        Assert.Equal(clientS2, serverS);
+        Assert.Equal(clientS, serverS2);
 
         var M1 = client.GenerateClientProof(B, clientS);
         Assert.True(server.ValidateClientProof(M1, A, serverS));
@@ -90,12 +98,12 @@ public class ScottBradySRPTests
         // generate password verifier to store 
         BigInteger v = client.GenerateVerifier(I, P, s);
 
-        var A = client.GenerateAValues();
+        var A = client.GenerateAValues(out var clientSrpState);
         Assert.True(A >= BigInteger.Zero);
         //var A = client.GenerateTestVectorAValues(
         //    BigInteger.Negate(BigInteger.Abs(new BigInteger(Sodium.SodiumCore.GetRandomBytes(32)))));
 
-        var B = server.GenerateBValues(v);
+        var B = server.GenerateBValues(v, out var serverSrpState);
         Assert.True(B >= BigInteger.Zero);
         //var B = server.GenerateTestVectorBValues(v,
         //    BigInteger.Negate(BigInteger.Abs(new BigInteger(Sodium.SodiumCore.GetRandomBytes(32)))));
@@ -103,6 +111,14 @@ public class ScottBradySRPTests
         var clientS = client.ComputeSessionKey(I, P, s, B);
         var serverS = server.ComputeSessionKey(v, A);
         Assert.Equal(clientS, serverS);
+
+        // Restore state in new client and server
+        client = new SrpClient(hasher, g, N, A, clientSrpState);
+        server = new SrpServer(hasher, g, N, B, serverSrpState);
+        var clientS2 = client.ComputeSessionKey(I, P, s, B);
+        var serverS2 = server.ComputeSessionKey(v, A);
+        Assert.Equal(clientS2, serverS);
+        Assert.Equal(clientS, serverS2);
 
         var M1 = client.GenerateClientProof(B, clientS);
         Assert.True(server.ValidateClientProof(M1, A, serverS));

@@ -215,7 +215,7 @@ public class KyprClient : IDisposable
             throw new InvalidOperationException("no account associated with this client");
         }
 
-        // First we lock and clear any cachec Vaults
+        // First we lock and clear any cached Vaults
         foreach (var v in Vaults)
         {
             LockRecords(v);
@@ -224,6 +224,7 @@ public class KyprClient : IDisposable
         Vaults.Clear();
 
         var vaultIds = await _server.ListVaultsAsync();
+
         foreach (var vid in vaultIds)
         {
             var vaultDetails = (await _server.GetVaultAsync(vid))!;

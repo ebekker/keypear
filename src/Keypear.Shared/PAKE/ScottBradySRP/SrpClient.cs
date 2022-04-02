@@ -20,6 +20,16 @@ public class SrpClient
         this._N = N;
     }
 
+    public SrpClient(Func<byte[], byte[]> hasher, int g, BigInteger N, BigInteger A, byte[] state)
+    {
+        this._H = hasher;
+        this._g = g;
+        this._N = N;
+
+        this._A = A;
+        this._a = new BigInteger(state);
+    }
+
     public BigInteger GenerateVerifier(string I, string P, byte[] s)
     {
         ArgumentNullException.ThrowIfNull(I);
@@ -35,12 +45,14 @@ public class SrpClient
         return v;
     }
 
-    internal BigInteger GenerateAValues()
+    public BigInteger GenerateAValues(out byte[] state)
     {
         _a = BigInteger.Abs(new BigInteger(SodiumCore.GetRandomBytes(32)));
 
         // A = g^a
         _A = BigInteger.ModPow(_g, _a, _N);
+
+        state = _a.ToByteArray();
 
         return _A;
     }
